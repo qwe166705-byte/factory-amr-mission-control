@@ -23,6 +23,13 @@ The focus is not only point-to-point navigation. The project models the system b
 - SQLite mission history,
 - deterministic one-click fault injection.
 
+## System Overview
+
+![Factory AMR Mission Control System](docs/images/01-system-overview.png)
+
+The system integrates ROS 2 mission orchestration, simulated PLC auto dispatch,
+Nav2 autonomous navigation, runtime monitoring and a web-based operator dashboard.
+
 ## V1.0 Status
 
 **Feature Freeze: complete**
@@ -238,6 +245,21 @@ flowchart LR
 ```
 
 Detailed architecture: [docs/architecture.md](docs/architecture.md)
+
+## Navigation Visualization
+
+![RViz Navigation](docs/images/03-rviz-navigation.png)
+
+RViz visualizes localization, navigation, AMCL particle distribution,
+station markers and the active mission target.
+
+## Fault Recovery
+
+![Fault Recovery and Safe Idle](docs/images/02-fault-recovery-safe-idle.png)
+
+After a navigation timeout, the active Nav2 goal is canceled and the system
+enters recovery. The robot returns Home and transitions to `SAFE_IDLE`,
+requiring operator reset before normal dispatch can resume.
 
 ## Mission State Machine
 
