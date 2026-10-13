@@ -1,0 +1,23 @@
+# 執行移動時的時間參數
+plc_simulator:
+  route:
+    - Station_A
+    - Station_B
+  auto_dispatch_enabled: false
+  ready_delay: 3.0
+  dwell_seconds: 30.0
+
+mission_manager:
+  navigation_timeout: 60.0
+  max_retries: 3
+  retry_delay: 3.0
+
+  recovery:
+    home_station: Home
+    recovery_delay: 3.0
+    return_home_timeout: 60.0
+
+demo:
+  fault_navigation_timeout: 2.0
+  fault_max_retries: 0
+

@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Factory AMR Mission Control</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #0d1117;
+    color: #e6edf3;
+    font-family:
+        Arial,
+        "Microsoft JhengHei",
+        sans-serif;
+}
+
+header {
+    padding: 20px 30px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+header p {
+    color: #8b949e;
+    margin: 6px 0 0;
+}
+
+.container {
+    padding: 24px 30px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(180px, 1fr)
+        );
+    gap: 14px;
+}
+
+.card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 18px;
+}
+
+.label {
+    color: #8b949e;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+
+.value {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.section {
+    margin-top: 24px;
+}
+
+.section-title {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.pose-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, 1fr);
+    gap: 14px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+button {
+    border: 0;
+    border-radius: 7px;
+    padding: 11px 18px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.auto-on {
+    background: #238636;
+    color: white;
+}
+
+.auto-off {
+    background: #da3633;
+    color: white;
+}
+
+.reset {
+    background: #d29922;
+    color: #111;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+#message {
+    margin-top: 14px;
+    min-height: 22px;
+    color: #58a6ff;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 9px;
+    border-bottom: 1px solid #30363d;
+}
+
+th {
+    color: #8b949e;
+}
+
+.good {
+    color: #3fb950;
+}
+
+.bad {
+    color: #f85149;
+}
+
+.warn {
+    color: #d29922;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>Factory AMR Mission Control</h1>
+
+<p>
+ROS2 Jazzy · Nav2 · Mission & Recovery System
+</p>
+
+</header>
+
+
+<div class="container">
+
+<div class="grid">
+
+<div class="card">
+<div class="label">MONITOR</div>
+<div id="monitor" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">SYSTEM READY</div>
+<div id="ready" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">AUTO MODE</div>
+<div id="auto" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">MISSION STATE</div>
+<div id="state" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">MISSION ID</div>
+<div id="mission" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">TARGET</div>
+<div id="target" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">RETRY</div>
+<div id="retry" class="value">0</div>
+</div>
+
+<div class="card">
+<div class="label">LAST ERROR</div>
+<div id="error" class="value">--</div>
+</div>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+Robot Pose
+</div>
+
+<div class="pose-grid">
+
+<div class="card">
+<div class="label">X</div>
+<div id="x" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">Y</div>
+<div id="y" class="value">--</div>
+</div>
+
+<div class="card">
+<div class="label">Yaw</div>
+<div id="yaw" class="value">--</div>
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="section">
+
+    <div class="section-title">
+        Operator Control
+    </div>
+
+    <div class="controls">
+
+        <!-- AUTO ON -->
+        <button class="auto-on" onclick="setAuto(true)">
+            AUTO ON
+        </button>
+
+        <!-- AUTO OFF -->
+        <button class="auto-off" onclick="setAuto(false)">
+            AUTO OFF
+        </button>
+
+        <!-- RESET MISSION -->
+        <button class="reset" onclick="resetMission()">
+            RESET MISSION
+        </button>
+
+        <!-- DEMO FAULT -->
+        <button class="demo-fault" onclick="demoFault()">
+            DEMO FAULT
+        </button>
+
+        <!-- DEMO STATUS -->
+        <div class="card">
+            <div class="label">
+                DEMO STATUS
+            </div>
+            <div id="demo" class="value">
+                --
+            </div>
+        </div>
+
+    </div>
+
+    <div id="message"></div>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-title">
+Mission History
+</div>
+
+<div class="card">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Time</th>
+<th>Mission</th>
+<th>State</th>
+<th>Target</th>
+<th>Event</th>
+<th>Detail</th>
+</tr>
+
+</thead>
+
+<tbody id="history">
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+function setText(
+    id,
+    value
+) {
+
+    document.getElementById(
+        id
+    ).textContent =
+        value ?? '--';
+
+}
+
+
+async function updateStatus() {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/status'
+            );
+
+        const data =
+            await response.json();
+
+        setText(
+            'monitor',
+            data.monitor_online
+                ? 'ONLINE'
+                : 'OFFLINE'
+        );
+
+        setText(
+            'ready',
+            data.system_ready
+                ? 'READY'
+                : 'NOT READY'
+        );
+
+        setText(
+            'auto',
+            data.auto_dispatch
+                ? 'ON'
+                : 'OFF'
+        );
+
+        setText(
+            'state',
+            data.state
+        );
+
+        setText(
+            'mission',
+            data.mission_id
+        );
+
+        setText(
+            'target',
+            data.target
+        );
+
+        setText(
+            'retry',
+            data.retry_count
+        );
+
+        setText(
+            'error',
+            data.last_error
+        );
+
+        const pose =
+            data.pose || {};
+
+        setText(
+            'x',
+            pose.x
+        );
+
+        setText(
+            'y',
+            pose.y
+        );
+
+        setText(
+            'yaw',
+            pose.yaw
+        );
+
+        setText(
+            'demo',
+            data.demo_status
+        );
+
+    }
+
+    catch (error) {
+
+        setText(
+            'monitor',
+            'OFFLINE'
+        );
+
+    }
+
+}
+
+
+async function updateHistory() {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/history?limit=30'
+            );
+
+        const rows =
+            await response.json();
+
+        const tbody =
+            document.getElementById(
+                'history'
+            );
+
+        tbody.innerHTML = '';
+
+        rows.forEach(
+            row => {
+
+                const tr =
+                    document.createElement(
+                        'tr'
+                    );
+
+                tr.innerHTML = `
+                    <td>${row.created_at ?? ''}</td>
+                    <td>${row.mission_id ?? ''}</td>
+                    <td>${row.state ?? ''}</td>
+                    <td>${row.target ?? ''}</td>
+                    <td>${row.event_type ?? ''}</td>
+                    <td>${row.detail ?? ''}</td>
+                `;
+
+                tbody.appendChild(
+                    tr
+                );
+
+            }
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            error
+        );
+
+    }
+
+}
+
+
+async function setAuto(
+    enabled
+) {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/auto',
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json'
+                    },
+
+                    body:
+                        JSON.stringify({
+                            enabled: enabled
+                        })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            'message'
+        ).textContent =
+            data.message;
+
+    }
+
+    catch (error) {
+
+        document.getElementById(
+            'message'
+        ).textContent =
+            'AUTO request failed';
+
+    }
+
+}
+
+
+async function resetMission() {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/reset',
+                {
+                    method: 'POST'
+                }
+            );
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            'message'
+        ).textContent =
+            data.message;
+
+    }
+
+    catch (error) {
+
+        document.getElementById(
+            'message'
+        ).textContent =
+            'Reset request failed';
+
+    }
+
+}
+
+async function demoFault() {
+
+    try {
+
+        const response =
+            await fetch(
+                '/api/demo_fault',
+                {
+                    method: 'POST'
+                }
+            );
+
+        const data =
+            await response.json();
+
+        document.getElementById(
+            'message'
+        ).textContent =
+            data.message;
+
+    }
+
+    catch (error) {
+
+        document.getElementById(
+            'message'
+        ).textContent =
+            'Demo fault request failed';
+
+    }
+
+}
+
+updateStatus();
+
+updateHistory();
+
+
+setInterval(
+    updateStatus,
+    1000
+);
+
+setInterval(
+    updateHistory,
+    3000
+);
+
+</script>
+
+</body>
+
+</html>

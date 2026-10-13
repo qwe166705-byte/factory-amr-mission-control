@@ -1,0 +1,21 @@
+# 狀態機
+from enum import Enum
+
+
+class MissionState(str, Enum):
+
+    BOOTING = 'BOOTING'
+    IDLE = 'IDLE'
+
+    REQUESTED = 'REQUESTED'
+    NAVIGATING = 'NAVIGATING'
+
+    ARRIVED = 'ARRIVED'
+    RETRYING = 'RETRYING'
+
+    RECOVERING = 'RECOVERING'
+    RETURNING_HOME = 'RETURNING_HOME'
+
+    SAFE_IDLE = 'SAFE_IDLE'
+
+    FINAL_ERROR = 'FINAL_ERROR'
